@@ -1,20 +1,23 @@
-require("dotenv").config();
-const express = require("express");
-const { createServer } = require("http");
-const helmet = require("helmet");
+import { config as dotEnvConfig } from "dotenv";
+import express from "express";
+import { createServer } from "http";
+import helmet from "helmet";
+import { connectMySQL } from "./config/index.js";
+import mySqlApiRoute from "./routes/index.js";
+
 const app = express();
 const server = createServer(app);
-const { pool } = require("./config/mySql");
 
+dotEnvConfig();
 const PORT = process.env.PORT || "8000";
 
-app.use(helmet());
+connectMySQL();
 
-app.get("/", async (req, res) => {
-  // For pool initialization, see above
-  const [rows, fields] = await pool.query("SELECT * FROM employees where employee_id=?", ["33391"]);
-  // Connection is automatically released when query resolves
-  res.json({ message: "Hi from server", rows, fields });
+app.use(helmet());
+app.use("/mysql", mySqlApiRoute);
+
+app.get("/", (req, res) => {
+  res.json({ message: "Hello from server" });
 });
 
 server.listen(PORT, () => {
